@@ -15,27 +15,45 @@ namespace WebScraper
             try
             {
                 Console.WriteLine("Enter the city you would like to scrape information from");
-            string craigslistCity = Console.ReadLine() ?? string.Empty;
-            Console.WriteLine("Enter the Craigslist category you would like to scrape");
-            string craigslistCategory = Console.ReadLine() ?? string.Empty;
-            WebClient webClient = new WebClient();
-            string content = webClient.DownloadString("http://" + craigslistCity.Replace(" ", string.Empty) + ".craigslist.org/" + Method + "/" + craigslistCategory);
-            ScrapeCriteria scrapeCriteria = new ScrapeCriteriaBuilder().WithData(content).WithRegex(@"<a href=\""(.?)\""data-id/>""(.?)\""class=\""result-title-hdrlnk"">(.*?)</a>").WithRegexOptions(RegexOptions.ExplicitCapture).WithPart(new ScrapeCriteriaPartBuilder().WithRegex(@">(.*?)</a>").WithRegexOptions(RegexOptions.Singleline).Build()).WithPart(new ScrapeCriteriaPartBuilder().WithRegex(@"href=\""(.*?)\""").WithRegexOptions(RegexOptions.Singleline).Build());
-            Scraper scraper = new Scraper();
-            var scrapedElements = scraper.Scrape(scrapeCriteria);
-            if (scrapedElements.Any())
-            {
-                foreach (var scrapedElement in scrapedElements) {
-                    Console.WriteLine(scrapedElement);
+                string craigslistCity = Console.ReadLine() ?? string.Empty;
+                Console.WriteLine("Enter the Craigslist category you would like to scrape");
+                string craigslistCategory = Console.ReadLine() ?? string.Empty;
+                using (WebClient webClient = new WebClient())
+                {
+                    string content = webClient.DownloadString("http://" + craigslistCity.Replace(" ", string.Empty) + ".craigslist.org/" + Method + "/" + craigslistCategory);
+                    ScrapeCriteria scrapeCriteria = new ScrapeCriteriaBuilder()
+                                 .WithData(content)
+                                 .WithRegex(@"<a href=\""(.*?)\"" data-id=\""(.*?)\"" class=\""result-title hdrlnk\"">(.*?)</a>")
+                                 .WithRegexOptions(RegexOptions.ExplicitCapture)
+                                 .WithPart(new ScrapeCriteriaPartBuilder()
+                                     .WithRegex(@">(.*?)</a>")
+                                     .WithRegexOptions(RegexOptions.Singleline)
+                                     .Build())
+                                 .WithPart(new ScrapeCriteriaPartBuilder()
+                                     .WithRegex(@"href=\""(.*?)\""")
+                                     .WithRegexOptions(RegexOptions.Singleline)
+                                     .Build())
+         .Build();
+                    Scraper scraper = new Scraper();
+                    var scrapedElements = scraper.Scrape(scrapeCriteria);
+                    if (scrapedElements.Any())
+                    {
+                        foreach (var scrapedElement in scrapedElements)
+                        {
+                            Console.WriteLine(scrapedElement);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("There were no matches for the specified scrape criteria.");
+                    }
                 }
-            }
-            else {
-                Console.WriteLine("There were no matches for the specified scrape criteria.");
-            }
+                Console.ReadLine();
             }
             catch (Exception exception)
             {
                 Console.WriteLine("An error has occured " + exception.Message);
+                Console.ReadLine();
             }
         }
     }
